@@ -17,7 +17,8 @@ export const sampleDeliveries: DeliveryRecord[] = [
     driverName: 'Rajesh Kumar',
     driverRent: 3000,
     miscSpends: 500,
-    totalRent: 5000
+    totalRent: 5000,
+    advance: 1000,
   },
   {
     id: '2',
@@ -30,7 +31,8 @@ export const sampleDeliveries: DeliveryRecord[] = [
     driverName: 'Suresh Patel',
     driverRent: 2800,
     miscSpends: 700,
-    totalRent: 9000
+    totalRent: 9000,
+    advance: 1000,
   },
   {
     id: '3',
@@ -43,7 +45,8 @@ export const sampleDeliveries: DeliveryRecord[] = [
     driverName: 'Amit Singh',
     driverRent: 3200,
     miscSpends: 600,
-    totalRent: 14400
+    totalRent: 14400,
+    advance: 1000,
   },
   {
     id: '4',
@@ -56,7 +59,8 @@ export const sampleDeliveries: DeliveryRecord[] = [
     driverName: 'Rajesh Kumar',
     driverRent: 4000,
     miscSpends: 800,
-    totalRent: 20800
+    totalRent: 20800,
+    advance: 1000,
   },
   {
     id: '5',
@@ -69,8 +73,9 @@ export const sampleDeliveries: DeliveryRecord[] = [
     driverName: 'Suresh Patel',
     driverRent: 3500,
     miscSpends: 900,
-    totalRent: 24500
-  }
+    totalRent: 24500,
+    advance: 1000,
+  },
 ];
 
 export const sampleMaintenance: MaintenanceRecord[] = [
@@ -78,32 +83,32 @@ export const sampleMaintenance: MaintenanceRecord[] = [
     id: '1',
     date: '2024-03-02',
     description: 'Oil Change and Filter Replacement',
-    cost: 3500
+    cost: 3500,
   },
   {
     id: '2',
     date: '2024-03-10',
     description: 'Brake Pad Replacement',
-    cost: 4800
+    cost: 4800,
   },
   {
     id: '3',
     date: '2024-03-15',
     description: 'Tire Rotation and Alignment',
-    cost: 2500
+    cost: 2500,
   },
   {
     id: '4',
     date: '2024-03-20',
     description: 'Battery Replacement',
-    cost: 8000
+    cost: 8000,
   },
   {
     id: '5',
     date: '2024-03-25',
     description: 'General Service and Inspection',
-    cost: 5500
-  }
+    cost: 5500,
+  },
 ];
 
 export const sampleFuel: FuelRecord[] = [
@@ -111,32 +116,32 @@ export const sampleFuel: FuelRecord[] = [
     id: '1',
     date: '2024-03-01',
     description: 'Full Tank Refill',
-    cost: 5000
+    cost: 5000,
   },
   {
     id: '2',
     date: '2024-03-05',
     description: 'Half Tank Refill',
-    cost: 2500
+    cost: 2500,
   },
   {
     id: '3',
     date: '2024-03-10',
     description: 'Full Tank Refill',
-    cost: 5200
+    cost: 5200,
   },
   {
     id: '4',
     date: '2024-03-15',
     description: 'Three-Quarter Tank Refill',
-    cost: 3800
+    cost: 3800,
   },
   {
     id: '5',
     date: '2024-03-20',
     description: 'Full Tank Refill',
-    cost: 5100
-  }
+    cost: 5100,
+  },
 ];
 
 export const sampleAdvancePayments: AdvanceRecord[] = [
@@ -144,32 +149,32 @@ export const sampleAdvancePayments: AdvanceRecord[] = [
     id: '1',
     date: '2024-03-01',
     driverName: 'Rajesh Kumar',
-    amount: 1000
+    amount: 1000,
   },
   {
     id: '2',
     date: '2024-03-05',
     driverName: 'Suresh Patel',
-    amount: 1500
+    amount: 1500,
   },
   {
     id: '3',
     date: '2024-03-10',
     driverName: 'Amit Singh',
-    amount: 1200
+    amount: 1200,
   },
   {
     id: '4',
     date: '2024-03-15',
     driverName: 'Rajesh Kumar',
-    amount: 2000
+    amount: 2000,
   },
   {
     id: '5',
     date: '2024-03-20',
     driverName: 'Suresh Patel',
-    amount: 1800
-  }
+    amount: 1800,
+  },
 ];
 
 export const sampleDriverPayments: DriverPaymentRecord[] = [
@@ -180,7 +185,7 @@ export const sampleDriverPayments: DriverPaymentRecord[] = [
     to: 'Pune',
     numberOfBags: 10,
     driverName: 'Rajesh Kumar',
-    driverRent: 3000
+    driverRent: 3000,
   },
   {
     id: '2',
@@ -189,7 +194,7 @@ export const sampleDriverPayments: DriverPaymentRecord[] = [
     to: 'Nashik',
     numberOfBags: 15,
     driverName: 'Suresh Patel',
-    driverRent: 3500
+    driverRent: 3500,
   },
   {
     id: '3',
@@ -198,7 +203,7 @@ export const sampleDriverPayments: DriverPaymentRecord[] = [
     to: 'Mumbai',
     numberOfBags: 12,
     driverName: 'Amit Singh',
-    driverRent: 3200
+    driverRent: 3200,
   },
   {
     id: '4',
@@ -207,7 +212,7 @@ export const sampleDriverPayments: DriverPaymentRecord[] = [
     to: 'Nagpur',
     numberOfBags: 18,
     driverName: 'Rajesh Kumar',
-    driverRent: 4000
+    driverRent: 4000,
   },
   {
     id: '5',
@@ -216,8 +221,8 @@ export const sampleDriverPayments: DriverPaymentRecord[] = [
     to: 'Pune',
     numberOfBags: 20,
     driverName: 'Suresh Patel',
-    driverRent: 4500
-  }
+    driverRent: 4500,
+  },
 ];
 
 export const sampleVendorPayments: VendorPaymentRecord[] = [
@@ -230,7 +235,7 @@ export const sampleVendorPayments: VendorPaymentRecord[] = [
     wayment: 780,
     rent: 5000,
     miscSpends: 500,
-    advance: 2000
+    advance: 2000,
   },
   {
     id: '2',
@@ -241,7 +246,7 @@ export const sampleVendorPayments: VendorPaymentRecord[] = [
     wayment: 1170,
     rent: 7500,
     miscSpends: 800,
-    advance: 3000
+    advance: 3000,
   },
   {
     id: '3',
@@ -252,7 +257,7 @@ export const sampleVendorPayments: VendorPaymentRecord[] = [
     wayment: 936,
     rent: 6000,
     miscSpends: 600,
-    advance: 2500
+    advance: 2500,
   },
   {
     id: '4',
@@ -263,7 +268,7 @@ export const sampleVendorPayments: VendorPaymentRecord[] = [
     wayment: 1404,
     rent: 9000,
     miscSpends: 1000,
-    advance: 4000
+    advance: 4000,
   },
   {
     id: '5',
@@ -274,6 +279,6 @@ export const sampleVendorPayments: VendorPaymentRecord[] = [
     wayment: 1560,
     rent: 10000,
     miscSpends: 1200,
-    advance: 4500
-  }
+    advance: 4500,
+  },
 ];

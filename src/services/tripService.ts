@@ -9,17 +9,24 @@ interface TripData {
   driverName: string;
   driverRent: number;
   miscSpends: number;
+  vanNo: string;
+  advance: number;
 }
 
-export async function createTrip(tripData: Omit<TripData, 'id'>): Promise<TripData> {
+export async function createTrip(
+  tripData: Omit<TripData, 'id'>
+): Promise<TripData> {
   try {
-    const response = await fetch('https://van-rental.onrender.com/api/tripdata', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(tripData),
-    });
+    const response = await fetch(
+      'https://van-rental.onrender.com/api/tripdata',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(tripData),
+      }
+    );
 
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
@@ -34,12 +41,15 @@ export async function createTrip(tripData: Omit<TripData, 'id'>): Promise<TripDa
 
 export async function fetchTrips(): Promise<TripData[]> {
   try {
-    const response = await fetch('https://van-rental.onrender.com/api/tripdata');
-    
+    const response = await fetch(
+      'https://van-rental.onrender.com/api/tripdata'
+    );
+
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
-
+    console.log("Inside trip service");
+    console.log(response);
     return await response.json();
   } catch (error) {
     console.error('Fetch trips error:', error);

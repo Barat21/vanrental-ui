@@ -17,6 +17,10 @@ export function VendorRentTable({ data, sortConfig, onSort }: VendorRentTablePro
       <ArrowDown className="h-4 w-4" />;
   };
 
+  const totalRent = data.reduce((sum, record) => sum + (record.numberOfBags * record.rentPerBag), 0);
+  const totalMiscSpends = data.reduce((sum, record) => sum + record.miscSpends, 0);
+  const grandTotal = totalRent + totalMiscSpends;
+
   return (
     <div className="overflow-x-auto">
       <table className="min-w-full divide-y divide-gray-200">
@@ -42,29 +46,62 @@ export function VendorRentTable({ data, sortConfig, onSort }: VendorRentTablePro
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
               Total Rent
             </th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Misc Spends
+            </th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Grand Total
+            </th>
           </tr>
         </thead>
         <tbody className="bg-white divide-y divide-gray-200">
-          {data.map((record) => (
-            <tr key={record.id} className="hover:bg-gray-50">
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                {formatDate(record.deliveryDate)}
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                {record.from} - {record.to}
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                {record.numberOfBags}
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                {formatCurrency(record.rentPerBag)}
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                {formatCurrency(record.numberOfBags * record.rentPerBag)}
-              </td>
-            </tr>
-          ))}
+          {data.map((record) => {
+            const rowTotalRent = record.numberOfBags * record.rentPerBag;
+            const rowTotal = rowTotalRent + record.miscSpends;
+            
+            return (
+              <tr key={record.id} className="hover:bg-gray-50">
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  {formatDate(record.deliveryDate)}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  {record.from} - {record.to}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  {record.numberOfBags}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  {formatCurrency(record.rentPerBag)}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  {formatCurrency(rowTotalRent)}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  {formatCurrency(record.miscSpends)}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                  {formatCurrency(rowTotal)}
+                </td>
+              </tr>
+            );
+          })}
         </tbody>
+        <tfoot className="bg-gray-50">
+          <tr>
+            <td colSpan={4} className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+              Totals
+            </td>
+            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+              {formatCurrency(totalRent)}
+            </td>
+            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+              {formatCurrency(totalMiscSpends)}
+            </td>
+            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600">
+              {formatCurrency(grandTotal)}
+            </td>
+          </tr>
+        </tfoot>
       </table>
     </div>
   );

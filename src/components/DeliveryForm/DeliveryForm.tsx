@@ -1,5 +1,13 @@
 import React, { useState, useCallback } from 'react';
-import { Truck, Calendar, Package, User, DollarSign, Upload, Receipt } from 'lucide-react';
+import {
+  Truck,
+  Calendar,
+  Package,
+  User,
+  DollarSign,
+  Upload,
+  Receipt,
+} from 'lucide-react';
 import { DeliveryFormData, FormErrors } from './types';
 import { FormInput } from './FormInput';
 import { ImageUpload } from './ImageUpload';
@@ -21,6 +29,7 @@ const initialFormData: DeliveryFormData = {
   driverRent: 0,
   miscSpends: 0,
   image: null,
+  advance: 0,
 };
 
 export function DeliveryForm({ onSubmit }: DeliveryFormProps) {
@@ -38,10 +47,10 @@ export function DeliveryForm({ onSubmit }: DeliveryFormProps) {
     const { name, value, type } = e.target;
     setSubmitError(null);
     setSubmitSuccess(false);
-    
+
     if (type === 'number') {
       const numValue = parseFloat(value) || 0;
-      setFormData(prev => {
+      setFormData((prev) => {
         const newData = { ...prev, [name]: numValue };
         if (name === 'wayment') {
           newData.numberOfBags = calculateBags(numValue);
@@ -49,12 +58,12 @@ export function DeliveryForm({ onSubmit }: DeliveryFormProps) {
         return newData;
       });
     } else {
-      setFormData(prev => ({ ...prev, [name]: value }));
+      setFormData((prev) => ({ ...prev, [name]: value }));
     }
   };
 
   const handleImageUpload = (file: File | null) => {
-    setFormData(prev => ({ ...prev, image: file }));
+    setFormData((prev) => ({ ...prev, image: file }));
   };
 
   const validateForm = (): boolean => {
@@ -62,12 +71,17 @@ export function DeliveryForm({ onSubmit }: DeliveryFormProps) {
 
     if (!formData.from) newErrors.from = 'From location is required';
     if (!formData.to) newErrors.to = 'To location is required';
-    if (!formData.deliveryDate) newErrors.deliveryDate = 'Delivery date is required';
-    if (formData.wayment <= 0) newErrors.wayment = 'Wayment must be greater than 0';
-    if (formData.rentPerBag <= 0) newErrors.rentPerBag = 'Rent per bag must be greater than 0';
+    if (!formData.deliveryDate)
+      newErrors.deliveryDate = 'Delivery date is required';
+    if (formData.wayment <= 0)
+      newErrors.wayment = 'Wayment must be greater than 0';
+    if (formData.rentPerBag <= 0)
+      newErrors.rentPerBag = 'Rent per bag must be greater than 0';
     if (!formData.driverName) newErrors.driverName = 'Driver name is required';
-    if (formData.driverRent <= 0) newErrors.driverRent = 'Driver rent must be greater than 0';
-    if (formData.miscSpends < 0) newErrors.miscSpends = 'Misc spends cannot be negative';
+    if (formData.driverRent <= 0)
+      newErrors.driverRent = 'Driver rent must be greater than 0';
+    if (formData.miscSpends < 0)
+      newErrors.miscSpends = 'Misc spends cannot be negative';
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -75,7 +89,7 @@ export function DeliveryForm({ onSubmit }: DeliveryFormProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (validateForm()) {
       setIsLoading(true);
       setSubmitError(null);
@@ -91,7 +105,7 @@ export function DeliveryForm({ onSubmit }: DeliveryFormProps) {
           rentPerBag: formData.rentPerBag,
           driverName: formData.driverName,
           driverRent: formData.driverRent,
-          miscSpends: formData.miscSpends
+          miscSpends: formData.miscSpends,
         };
 
         await createTrip(tripData);
@@ -99,7 +113,9 @@ export function DeliveryForm({ onSubmit }: DeliveryFormProps) {
         onSubmit(formData);
         setFormData(initialFormData);
       } catch (error) {
-        setSubmitError(error instanceof Error ? error.message : 'An error occurred');
+        setSubmitError(
+          error instanceof Error ? error.message : 'An error occurred'
+        );
       } finally {
         setIsLoading(false);
       }
@@ -114,7 +130,7 @@ export function DeliveryForm({ onSubmit }: DeliveryFormProps) {
             Trip data saved successfully!
           </div>
         )}
-        
+
         {submitError && (
           <div className="bg-red-50 text-red-800 p-4 rounded-lg mb-4">
             {submitError}

@@ -14,25 +14,29 @@ import { DeliveryRecord } from './components/DataDisplay/types';
 import { MaintenanceRecord } from './components/Maintenance/types';
 import { FuelRecord } from './components/Fuel/types';
 import { AdvanceRecord } from './components/Advance/types';
-import { DriverPaymentRecord } from './components/DriverPayment/types';
-import { VendorPaymentRecord } from './components/VendorPayment/types';
-import { DeliveryFormData } from './components/DeliveryForm/types';
 import { handleSort } from './utils/sorting';
 import { fetchTrips } from './services/tripService';
 import { LoadingSpinner } from './components/LoadingSpinner';
+import { 
+  sampleMaintenance, 
+  sampleFuel, 
+  sampleAdvancePayments,
+  sampleDriverPayments,
+  sampleVendorPayments 
+} from './data/sampleData';
+
+type TabType = 'delivery' | 'maintenance' | 'fuel' | 'advance' | 'driverPayment' | 'vendorPayment';
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [activeTab, setActiveTab] = useState<'delivery' | 'maintenance' | 'fuel' | 'advance' | 'driverPayment' | 'vendorPayment'>('delivery');
+  const [activeTab, setActiveTab] = useState<TabType>('delivery');
   const [showForm, setShowForm] = useState(true);
   const [deliveries, setDeliveries] = useState<DeliveryRecord[]>([]);
+  const [maintenance, setMaintenance] = useState<MaintenanceRecord[]>(sampleMaintenance);
+  const [fuel, setFuel] = useState<FuelRecord[]>(sampleFuel);
+  const [advance, setAdvance] = useState<AdvanceRecord[]>(sampleAdvancePayments);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [maintenance, setMaintenance] = useState<MaintenanceRecord[]>([]);
-  const [fuel, setFuel] = useState<FuelRecord[]>([]);
-  const [advance, setAdvance] = useState<AdvanceRecord[]>([]);
-  const [driverPayments] = useState<DriverPaymentRecord[]>([]);
-  const [vendorPayments] = useState<VendorPaymentRecord[]>([]);
   const [dateRange, setDateRange] = useState({ start: '', end: '' });
   const [sortConfig, setSortConfig] = useState({ field: 'deliveryDate', order: 'desc' as const });
 
@@ -47,19 +51,24 @@ function App() {
     setError(null);
     try {
       const trips = await fetchTrips();
+      console.log("Raw trips data:", trips); // Debug log
+      
       const formattedTrips = trips.map(trip => ({
-        id: String(trip.id),
-        from: trip.fromLocation,
-        to: trip.toLocation,
-        deliveryDate: trip.dateOfDelivery,
-        wayment: trip.wayment,
-        numberOfBags: trip.numberOfBags,
-        rentPerBag: trip.rentPerBag,
-        driverName: trip.driverName,
-        driverRent: trip.driverRent,
-        miscSpends: trip.miscSpends,
-        totalRent: trip.numberOfBags * trip.rentPerBag
+        id: String(trip.id || Date.now()),
+        from: trip.fromLocation || (trip.vanNo === 'ADVANCE' ? 'Advance Payment' : '-'),
+        to: trip.toLocation || (trip.vanNo === 'ADVANCE' ? '' : '-'),
+        deliveryDate: trip.dateOfDelivery || '',
+        wayment: trip.wayment || 0,
+        numberOfBags: trip.numberOfBags || 0,
+        rentPerBag: trip.rentPerBag || 0,
+        driverName: trip.driverName || '',
+        driverRent: trip.driverRent || 0,
+        miscSpends: trip.miscSpends || 0,
+        advance: trip.advance || 0,
+        totalRent: (trip.numberOfBags || 0) * (trip.rentPerBag || 0)
       }));
+      
+      console.log("Formatted trips data:", formattedTrips); // Debug log
       setDeliveries(formattedTrips);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load trips');
@@ -68,8 +77,19 @@ function App() {
     }
   };
 
-  const handleSortWrapper = (field: string) => {
-    handleSort(field, sortConfig, setSortConfig);
+  const handleMaintenanceSubmit = (record: MaintenanceRecord) => {
+    setMaintenance(prev => [...prev, record]);
+    setShowForm(false);
+  };
+
+  const handleFuelSubmit = (record: FuelRecord) => {
+    setFuel(prev => [...prev, record]);
+    setShowForm(false);
+  };
+
+  const handleAdvanceSubmit = (record: AdvanceRecord) => {
+    setAdvance(prev => [...prev, record]);
+    setShowForm(false);
   };
 
   if (!isLoggedIn) {
@@ -85,7 +105,7 @@ function App() {
               <button
                 key={tab}
                 onClick={() => {
-                  setActiveTab(tab as any);
+                  setActiveTab(tab as TabType);
                   setShowForm(true);
                 }}
                 className={`py-4 px-1 border-b-2 font-medium text-sm ${
@@ -125,17 +145,16 @@ function App() {
           </div>
         )}
 
-        {isLoading && (
+        {isLoading ? (
           <div className="flex justify-center items-center h-64">
             <LoadingSpinner />
           </div>
-        )}
-
-        {!isLoading && (
+        ) : (
           <>
             {activeTab === 'delivery' && showForm && (
-              <DeliveryForm onSubmit={(data: DeliveryFormData) => {
-                loadTrips(); // Reload the trips after submission
+              <DeliveryForm onSubmit={() => {
+                loadTrips();
+                setShowForm(false);
               }} />
             )}
 
@@ -143,7 +162,7 @@ function App() {
               <DataDisplay
                 data={deliveries}
                 sortConfig={sortConfig}
-                onSort={handleSortWrapper}
+                onSort={handleSort}
                 startDate={dateRange.start}
                 endDate={dateRange.end}
                 onStartDateChange={(date) => setDateRange(prev => ({ ...prev, start: date }))}
@@ -151,7 +170,78 @@ function App() {
               />
             )}
 
-            {/* Other components remain the same */}
+            {activeTab === 'maintenance' && showForm && (
+              <MaintenanceForm onSubmit={handleMaintenanceSubmit} />
+            )}
+
+            {activeTab === 'maintenance' && !showForm && (
+              <MaintenanceTable
+                data={maintenance}
+                sortConfig={sortConfig}
+                onSort={handleSort}
+                startDate={dateRange.start}
+                endDate={dateRange.end}
+                onStartDateChange={(date) => setDateRange(prev => ({ ...prev, start: date }))}
+                onEndDateChange={(date) => setDateRange(prev => ({ ...prev, end: date }))}
+              />
+            )}
+
+            {activeTab === 'fuel' && showForm && (
+              <FuelForm onSubmit={handleFuelSubmit} />
+            )}
+
+            {activeTab === 'fuel' && !showForm && (
+              <FuelTable
+                data={fuel}
+                sortConfig={sortConfig}
+                onSort={handleSort}
+                startDate={dateRange.start}
+                endDate={dateRange.end}
+                onStartDateChange={(date) => setDateRange(prev => ({ ...prev, start: date }))}
+                onEndDateChange={(date) => setDateRange(prev => ({ ...prev, end: date }))}
+              />
+            )}
+
+            {activeTab === 'advance' && showForm && (
+              <AdvanceForm onSubmit={handleAdvanceSubmit} />
+            )}
+
+            {activeTab === 'advance' && !showForm && (
+              <AdvanceTable
+                data={advance}
+                sortConfig={sortConfig}
+                onSort={handleSort}
+                startDate={dateRange.start}
+                endDate={dateRange.end}
+                onStartDateChange={(date) => setDateRange(prev => ({ ...prev, start: date }))}
+                onEndDateChange={(date) => setDateRange(prev => ({ ...prev, end: date }))}
+              />
+            )}
+
+            {activeTab === 'driverPayment' && (
+              <DriverPaymentTable
+                data={sampleDriverPayments}
+                advanceData={advance}
+                sortConfig={sortConfig}
+                onSort={handleSort}
+                startDate={dateRange.start}
+                endDate={dateRange.end}
+                onStartDateChange={(date) => setDateRange(prev => ({ ...prev, start: date }))}
+                onEndDateChange={(date) => setDateRange(prev => ({ ...prev, end: date }))}
+              />
+            )}
+
+            {activeTab === 'vendorPayment' && (
+              <VendorPaymentTable
+                data={sampleVendorPayments}
+                sortConfig={sortConfig}
+                onSort={handleSort}
+                startDate={dateRange.start}
+                endDate={dateRange.end}
+                onStartDateChange={(date) => setDateRange(prev => ({ ...prev, start: date }))}
+                onEndDateChange={(date) => setDateRange(prev => ({ ...prev, end: date }))}
+              />
+            )}
           </>
         )}
       </div>

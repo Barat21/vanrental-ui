@@ -9,6 +9,7 @@ export interface DeliveryFormData {
   driverRent: number;
   miscSpends: number;
   image: File | null;
+  advance: number;
 }
 
 export interface FormErrors {

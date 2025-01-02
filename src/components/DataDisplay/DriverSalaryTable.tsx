@@ -9,23 +9,43 @@ interface DriverSalaryTableProps {
   onSort: (field: keyof DeliveryRecord) => void;
 }
 
-export function DriverSalaryTable({ data, sortConfig, onSort }: DriverSalaryTableProps) {
+export function DriverSalaryTable({
+  data,
+  sortConfig,
+  onSort,
+}: DriverSalaryTableProps) {
   const [driverSearch, setDriverSearch] = React.useState('');
+  console.log('Unfiltered Data');
+  console.log(data);
 
-  const filteredData = data.filter(record => 
+  const filteredData = data.filter((record) =>
     record.driverName.toLowerCase().includes(driverSearch.toLowerCase())
   );
 
+  console.log('filtered Data' + filteredData);
+
   const getSortIcon = (field: keyof DeliveryRecord) => {
     if (sortConfig.field !== field) return <ArrowUpDown className="h-4 w-4" />;
-    return sortConfig.order === 'asc' ? 
-      <ArrowUp className="h-4 w-4" /> : 
-      <ArrowDown className="h-4 w-4" />;
+    return sortConfig.order === 'asc' ? (
+      <ArrowUp className="h-4 w-4" />
+    ) : (
+      <ArrowDown className="h-4 w-4" />
+    );
   };
 
-  const totalDriverRent = filteredData.reduce((sum, record) => sum + record.driverRent, 0);
-  const totalMiscSpends = filteredData.reduce((sum, record) => sum + record.miscSpends, 0);
-  const grandTotal = totalDriverRent + totalMiscSpends;
+  const totalDriverRent = filteredData.reduce(
+    (sum, record) => sum + record.driverRent,
+    0
+  );
+  const totalMiscSpends = filteredData.reduce(
+    (sum, record) => sum + record.miscSpends,
+    0
+  );
+  const totalAdvance = filteredData.reduce(
+    (sum, record) => sum + (record.advance || 0),
+    0
+  );
+  const grandTotal = totalDriverRent + totalMiscSpends - totalAdvance;
 
   return (
     <div className="space-y-4">
@@ -44,7 +64,7 @@ export function DriverSalaryTable({ data, sortConfig, onSort }: DriverSalaryTabl
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
-              <th 
+              <th
                 className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
                 onClick={() => onSort('deliveryDate')}
               >
@@ -65,33 +85,45 @@ export function DriverSalaryTable({ data, sortConfig, onSort }: DriverSalaryTabl
                 Misc Spends
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Advance
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Total
               </th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {filteredData.map((record) => (
-              <tr key={record.id} className="hover:bg-gray-50">
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {formatDate(record.deliveryDate)}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {record.driverName}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {record.from} - {record.to}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {formatCurrency(record.driverRent)}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {formatCurrency(record.miscSpends)}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                  {formatCurrency(record.driverRent + record.miscSpends)}
-                </td>
-              </tr>
-            ))}
+            {filteredData.map((record) => {
+              const rowTotal =
+                record.driverRent + record.miscSpends - (record.advance || 0);
+              console.log('Advance for record', record.id, ':', record.advance);
+
+              return (
+                <tr key={record.id} className="hover:bg-gray-50">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {formatDate(record.deliveryDate)}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {record.driverName}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {record.from} - {record.to}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {formatCurrency(record.driverRent)}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {formatCurrency(record.miscSpends)}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {formatCurrency(record.advance || 0)}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                    {formatCurrency(rowTotal)}
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
           <tfoot className="bg-gray-50 font-medium">
             <tr>
@@ -105,6 +137,9 @@ export function DriverSalaryTable({ data, sortConfig, onSort }: DriverSalaryTabl
                 {formatCurrency(totalMiscSpends)}
               </td>
               <td className="px-6 py-4 text-sm text-gray-900">
+                {formatCurrency(totalAdvance)}
+              </td>
+              <td className="px-6 py-4 text-sm text-blue-600">
                 {formatCurrency(grandTotal)}
               </td>
             </tr>
