@@ -11,7 +11,7 @@ import {
 import { DeliveryFormData, FormErrors } from './types';
 import { FormInput } from './FormInput';
 import { ImageUpload } from './ImageUpload';
-import { createTrip } from '../../services/tripService';
+import { createTrip, uploadTripImage } from '../../services/tripService';
 import { LoadingSpinner } from '../LoadingSpinner';
 
 interface DeliveryFormProps {
@@ -106,9 +106,18 @@ export function DeliveryForm({ onSubmit }: DeliveryFormProps) {
           driverName: formData.driverName,
           driverRent: formData.driverRent,
           miscSpends: formData.miscSpends,
+          vanNo: 'default', // Add default value or make it configurable
+          advance: formData.advance,
         };
 
-        await createTrip(tripData);
+        // First save the trip data
+        const savedTrip = await createTrip(tripData);
+
+        // If there's an image and we have the trip ID, upload the image
+        if (formData.image && savedTrip.id) {
+          await uploadTripImage(formData.image, savedTrip.id);
+        }
+
         setSubmitSuccess(true);
         onSubmit(formData);
         setFormData(initialFormData);
@@ -230,6 +239,17 @@ export function DeliveryForm({ onSubmit }: DeliveryFormProps) {
             value={formData.miscSpends}
             onChange={handleChange}
             error={errors.miscSpends}
+            disabled={isLoading}
+          />
+
+          <FormInput
+            icon={<DollarSign className="h-5 w-5" />}
+            label="Advance"
+            name="advance"
+            type="number"
+            value={formData.advance}
+            onChange={handleChange}
+            error={errors.advance}
             disabled={isLoading}
           />
         </div>

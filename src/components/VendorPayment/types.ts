@@ -8,4 +8,5 @@ export interface VendorPaymentRecord {
   rent: number;
   miscSpends: number;
   advance: number;
+  imageUrl: string;
 }

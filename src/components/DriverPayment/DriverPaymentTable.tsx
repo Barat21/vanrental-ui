@@ -28,7 +28,7 @@ export function DriverPaymentTable({
   onEndDateChange,
 }: DriverPaymentTableProps) {
   const [driverSearch, setDriverSearch] = useState('');
-
+  console.log(data);
   const getSortIcon = (field: keyof DriverPaymentRecord) => {
     if (sortConfig.field !== field) return <ArrowUpDown className="h-4 w-4" />;
     return sortConfig.order === 'asc' ? 

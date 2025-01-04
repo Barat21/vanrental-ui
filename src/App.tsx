@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { LoginPage } from './components/LoginPage';
+import { Layout } from './components/layout/Layout';
 import { DeliveryForm } from './components/DeliveryForm/DeliveryForm';
 import { DataDisplay } from './components/DataDisplay/DataDisplay';
 import { MaintenanceForm } from './components/Maintenance/MaintenanceForm';
@@ -21,8 +22,7 @@ import {
   sampleMaintenance, 
   sampleFuel, 
   sampleAdvancePayments,
-  sampleDriverPayments,
-  sampleVendorPayments 
+  sampleDriverPayments
 } from './data/sampleData';
 
 type TabType = 'delivery' | 'maintenance' | 'fuel' | 'advance' | 'driverPayment' | 'vendorPayment';
@@ -51,8 +51,6 @@ function App() {
     setError(null);
     try {
       const trips = await fetchTrips();
-      console.log("Raw trips data:", trips); // Debug log
-      
       const formattedTrips = trips.map(trip => ({
         id: String(trip.id || Date.now()),
         from: trip.fromLocation || (trip.vanNo === 'ADVANCE' ? 'Advance Payment' : '-'),
@@ -67,8 +65,6 @@ function App() {
         advance: trip.advance || 0,
         totalRent: (trip.numberOfBags || 0) * (trip.rentPerBag || 0)
       }));
-      
-      console.log("Formatted trips data:", formattedTrips); // Debug log
       setDeliveries(formattedTrips);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load trips');
@@ -92,38 +88,42 @@ function App() {
     setShowForm(false);
   };
 
+  const handleLogout = () => {
+    setIsLoggedIn(false);
+  };
+
   if (!isLoggedIn) {
     return <LoginPage onLogin={() => setIsLoggedIn(true)} />;
   }
 
-  return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="border-b border-gray-200 mb-8">
-          <nav className="-mb-px flex space-x-8">
-            {['delivery', 'maintenance', 'fuel', 'advance', 'driverPayment', 'vendorPayment'].map((tab) => (
-              <button
-                key={tab}
-                onClick={() => {
-                  setActiveTab(tab as TabType);
-                  setShowForm(true);
-                }}
-                className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                  activeTab === tab
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
-              >
-                {tab === 'driverPayment' ? 'Driver Payment' : 
-                 tab === 'vendorPayment' ? 'Vendor Payment' :
-                 tab.charAt(0).toUpperCase() + tab.slice(1)}
-              </button>
-            ))}
-          </nav>
-        </div>
+  const mainContent = (
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
+        <nav className="flex space-x-1 p-1 bg-gray-100 rounded-lg">
+          {['delivery', 'maintenance', 'fuel', 'advance', 'driverPayment', 'vendorPayment'].map((tab) => (
+            <button
+              key={tab}
+              onClick={() => {
+                setActiveTab(tab as TabType);
+                setShowForm(true);
+              }}
+              className={`flex-1 px-3 py-2 text-sm font-medium rounded-md transition-colors ${
+                activeTab === tab
+                  ? 'bg-white text-blue-600 shadow-sm'
+                  : 'text-gray-500 hover:text-gray-900'
+              }`}
+            >
+              {tab === 'driverPayment' ? 'Driver Payment' : 
+               tab === 'vendorPayment' ? 'Vendor Payment' :
+               tab.charAt(0).toUpperCase() + tab.slice(1)}
+            </button>
+          ))}
+        </nav>
+      </div>
 
+      <div className="bg-white rounded-lg shadow-sm p-6">
         <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">
+          <h1 className="text-2xl font-bold text-gray-900">
             {activeTab === 'driverPayment' ? 'Driver Payment Records' :
              activeTab === 'vendorPayment' ? 'Vendor Payment Records' :
              showForm ? `New ${activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}` : 
@@ -162,7 +162,7 @@ function App() {
               <DataDisplay
                 data={deliveries}
                 sortConfig={sortConfig}
-                onSort={handleSort}
+                onSort={(field) => handleSort(field, sortConfig, setSortConfig)}
                 startDate={dateRange.start}
                 endDate={dateRange.end}
                 onStartDateChange={(date) => setDateRange(prev => ({ ...prev, start: date }))}
@@ -178,7 +178,7 @@ function App() {
               <MaintenanceTable
                 data={maintenance}
                 sortConfig={sortConfig}
-                onSort={handleSort}
+                onSort={(field) => handleSort(field, sortConfig, setSortConfig)}
                 startDate={dateRange.start}
                 endDate={dateRange.end}
                 onStartDateChange={(date) => setDateRange(prev => ({ ...prev, start: date }))}
@@ -194,7 +194,7 @@ function App() {
               <FuelTable
                 data={fuel}
                 sortConfig={sortConfig}
-                onSort={handleSort}
+                onSort={(field) => handleSort(field, sortConfig, setSortConfig)}
                 startDate={dateRange.start}
                 endDate={dateRange.end}
                 onStartDateChange={(date) => setDateRange(prev => ({ ...prev, start: date }))}
@@ -210,7 +210,7 @@ function App() {
               <AdvanceTable
                 data={advance}
                 sortConfig={sortConfig}
-                onSort={handleSort}
+                onSort={(field) => handleSort(field, sortConfig, setSortConfig)}
                 startDate={dateRange.start}
                 endDate={dateRange.end}
                 onStartDateChange={(date) => setDateRange(prev => ({ ...prev, start: date }))}
@@ -223,7 +223,7 @@ function App() {
                 data={sampleDriverPayments}
                 advanceData={advance}
                 sortConfig={sortConfig}
-                onSort={handleSort}
+                onSort={(field) => handleSort(field, sortConfig, setSortConfig)}
                 startDate={dateRange.start}
                 endDate={dateRange.end}
                 onStartDateChange={(date) => setDateRange(prev => ({ ...prev, start: date }))}
@@ -233,9 +233,8 @@ function App() {
 
             {activeTab === 'vendorPayment' && (
               <VendorPaymentTable
-                data={sampleVendorPayments}
                 sortConfig={sortConfig}
-                onSort={handleSort}
+                onSort={(field) => handleSort(field, sortConfig, setSortConfig)}
                 startDate={dateRange.start}
                 endDate={dateRange.end}
                 onStartDateChange={(date) => setDateRange(prev => ({ ...prev, start: date }))}
@@ -246,6 +245,12 @@ function App() {
         )}
       </div>
     </div>
+  );
+
+  return (
+    <Layout onLogout={handleLogout}>
+      {mainContent}
+    </Layout>
   );
 }
 

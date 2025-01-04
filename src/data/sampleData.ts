@@ -236,6 +236,7 @@ export const sampleVendorPayments: VendorPaymentRecord[] = [
     rent: 5000,
     miscSpends: 500,
     advance: 2000,
+    imageUrl: 'https://images.unsplash.com/photo-1568454537842-d933259bb258?auto=format&fit=crop&w=800&q=80',
   },
   {
     id: '2',
@@ -247,6 +248,7 @@ export const sampleVendorPayments: VendorPaymentRecord[] = [
     rent: 7500,
     miscSpends: 800,
     advance: 3000,
+    imageUrl: 'https://images.unsplash.com/photo-1544377193-33dcf4d68fb5?auto=format&fit=crop&w=800&q=80',
   },
   {
     id: '3',
@@ -258,6 +260,7 @@ export const sampleVendorPayments: VendorPaymentRecord[] = [
     rent: 6000,
     miscSpends: 600,
     advance: 2500,
+    imageUrl: 'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&w=800&q=80',
   },
   {
     id: '4',
@@ -269,6 +272,7 @@ export const sampleVendorPayments: VendorPaymentRecord[] = [
     rent: 9000,
     miscSpends: 1000,
     advance: 4000,
+    imageUrl: 'https://images.unsplash.com/photo-1540835296355-c04f7a063cbb?auto=format&fit=crop&w=800&q=80',
   },
   {
     id: '5',
@@ -280,5 +284,6 @@ export const sampleVendorPayments: VendorPaymentRecord[] = [
     rent: 10000,
     miscSpends: 1200,
     advance: 4500,
+    imageUrl: 'https://images.unsplash.com/photo-1591768793355-74d04bb6608f?auto=format&fit=crop&w=800&q=80',
   },
 ];

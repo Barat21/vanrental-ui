@@ -25,7 +25,7 @@ export function AdvanceForm({ onSubmit }: AdvanceFormProps) {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       [name]: type === 'number' ? parseFloat(value) || 0 : value,
     }));

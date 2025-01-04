@@ -39,6 +39,29 @@ export async function createTrip(
   }
 }
 
+export async function uploadTripImage(file: File, tripId: number): Promise<void> {
+  try {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('tripId', tripId.toString());
+
+    const response = await fetch(
+      'https://van-rental.onrender.com/api/images/upload',
+      {
+        method: 'POST',
+        body: formData,
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+  } catch (error) {
+    console.error('Image upload error:', error);
+    throw new Error('Failed to upload image. Please try again.');
+  }
+}
+
 export async function fetchTrips(): Promise<TripData[]> {
   try {
     const response = await fetch(
