@@ -16,7 +16,7 @@ import { MaintenanceRecord } from './components/Maintenance/types';
 import { FuelRecord } from './components/Fuel/types';
 import { AdvanceRecord } from './components/Advance/types';
 import { handleSort } from './utils/sorting';
-import { fetchTrips } from './services/tripService';
+import { fetchTrips, deleteTrip } from './services/tripService';
 import { LoadingSpinner } from './components/LoadingSpinner';
 import { 
   sampleMaintenance, 
@@ -39,6 +39,7 @@ function App() {
   const [error, setError] = useState<string | null>(null);
   const [dateRange, setDateRange] = useState({ start: '', end: '' });
   const [sortConfig, setSortConfig] = useState({ field: 'deliveryDate', order: 'desc' as const });
+  const [editingDelivery, setEditingDelivery] = useState<DeliveryRecord | null>(null);
 
   useEffect(() => {
     if (isLoggedIn && !showForm) {
@@ -73,6 +74,19 @@ function App() {
     }
   };
 
+  const handleDelete = async (id: string) => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      await deleteTrip(parseInt(id));
+      await loadTrips();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to delete trip');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleMaintenanceSubmit = (record: MaintenanceRecord) => {
     setMaintenance(prev => [...prev, record]);
     setShowForm(false);
@@ -86,6 +100,17 @@ function App() {
   const handleAdvanceSubmit = (record: AdvanceRecord) => {
     setAdvance(prev => [...prev, record]);
     setShowForm(false);
+  };
+
+  const handleEdit = (record: DeliveryRecord) => {
+    setEditingDelivery(record);
+    setShowForm(true);
+  };
+
+  const handleDeliverySubmit = () => {
+    loadTrips();
+    setShowForm(false);
+    setEditingDelivery(null);
   };
 
   const handleLogout = () => {
@@ -106,6 +131,7 @@ function App() {
               onClick={() => {
                 setActiveTab(tab as TabType);
                 setShowForm(true);
+                setEditingDelivery(null);
               }}
               className={`flex-1 px-3 py-2 text-sm font-medium rounded-md transition-colors ${
                 activeTab === tab
@@ -126,12 +152,15 @@ function App() {
           <h1 className="text-2xl font-bold text-gray-900">
             {activeTab === 'driverPayment' ? 'Driver Payment Records' :
              activeTab === 'vendorPayment' ? 'Vendor Payment Records' :
-             showForm ? `New ${activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}` : 
+             showForm ? `${editingDelivery ? 'Edit' : 'New'} ${activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}` : 
              `${activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} Records`}
           </h1>
           {activeTab !== 'driverPayment' && activeTab !== 'vendorPayment' && (
             <button
-              onClick={() => setShowForm(!showForm)}
+              onClick={() => {
+                setShowForm(!showForm);
+                setEditingDelivery(null);
+              }}
               className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
             >
               {showForm ? 'View Records' : 'New Record'}
@@ -152,10 +181,11 @@ function App() {
         ) : (
           <>
             {activeTab === 'delivery' && showForm && (
-              <DeliveryForm onSubmit={() => {
-                loadTrips();
-                setShowForm(false);
-              }} />
+              <DeliveryForm 
+                onSubmit={handleDeliverySubmit}
+                initialData={editingDelivery || undefined}
+                isEdit={!!editingDelivery}
+              />
             )}
 
             {activeTab === 'delivery' && !showForm && (
@@ -167,6 +197,8 @@ function App() {
                 endDate={dateRange.end}
                 onStartDateChange={(date) => setDateRange(prev => ({ ...prev, start: date }))}
                 onEndDateChange={(date) => setDateRange(prev => ({ ...prev, end: date }))}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
               />
             )}
 

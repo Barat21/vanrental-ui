@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import {
   Truck,
   Calendar,
@@ -11,11 +11,13 @@ import {
 import { DeliveryFormData, FormErrors } from './types';
 import { FormInput } from './FormInput';
 import { ImageUpload } from './ImageUpload';
-import { createTrip, uploadTripImage } from '../../services/tripService';
+import { createTrip, updateTrip, uploadTripImage } from '../../services/tripService';
 import { LoadingSpinner } from '../LoadingSpinner';
 
 interface DeliveryFormProps {
   onSubmit: (formData: DeliveryFormData) => void;
+  initialData?: DeliveryFormData & { id?: number };
+  isEdit?: boolean;
 }
 
 const initialFormData: DeliveryFormData = {
@@ -32,12 +34,18 @@ const initialFormData: DeliveryFormData = {
   advance: 0,
 };
 
-export function DeliveryForm({ onSubmit }: DeliveryFormProps) {
-  const [formData, setFormData] = useState<DeliveryFormData>(initialFormData);
+export function DeliveryForm({ onSubmit, initialData, isEdit = false }: DeliveryFormProps) {
+  const [formData, setFormData] = useState<DeliveryFormData>(initialData || initialFormData);
   const [errors, setErrors] = useState<FormErrors>({});
   const [isLoading, setIsLoading] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [submitSuccess, setSubmitSuccess] = useState(false);
+
+  useEffect(() => {
+    if (initialData) {
+      setFormData(initialData);
+    }
+  }, [initialData]);
 
   const calculateBags = useCallback((wayment: number) => {
     return Math.ceil(wayment / 78);
@@ -106,21 +114,26 @@ export function DeliveryForm({ onSubmit }: DeliveryFormProps) {
           driverName: formData.driverName,
           driverRent: formData.driverRent,
           miscSpends: formData.miscSpends,
-          vanNo: 'default', // Add default value or make it configurable
+          vanNo: 'default',
           advance: formData.advance,
         };
 
-        // First save the trip data
-        const savedTrip = await createTrip(tripData);
+        let savedTrip;
+        if (isEdit && initialData?.id) {
+          savedTrip = await updateTrip(initialData.id, tripData);
+        } else {
+          savedTrip = await createTrip(tripData);
+        }
 
-        // If there's an image and we have the trip ID, upload the image
         if (formData.image && savedTrip.id) {
           await uploadTripImage(formData.image, savedTrip.id);
         }
 
         setSubmitSuccess(true);
         onSubmit(formData);
-        setFormData(initialFormData);
+        if (!isEdit) {
+          setFormData(initialFormData);
+        }
       } catch (error) {
         setSubmitError(
           error instanceof Error ? error.message : 'An error occurred'
@@ -136,7 +149,7 @@ export function DeliveryForm({ onSubmit }: DeliveryFormProps) {
       <form onSubmit={handleSubmit} className="space-y-6">
         {submitSuccess && (
           <div className="bg-green-50 text-green-800 p-4 rounded-lg mb-4">
-            Trip data saved successfully!
+            Trip data {isEdit ? 'updated' : 'saved'} successfully!
           </div>
         )}
 
@@ -265,7 +278,7 @@ export function DeliveryForm({ onSubmit }: DeliveryFormProps) {
           disabled={isLoading}
           className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
         >
-          {isLoading ? <LoadingSpinner /> : 'Submit Delivery Details'}
+          {isLoading ? <LoadingSpinner /> : (isEdit ? 'Update Delivery Details' : 'Submit Delivery Details')}
         </button>
       </form>
     </div>
