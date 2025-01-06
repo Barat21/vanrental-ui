@@ -78,38 +78,7 @@ export const sampleDeliveries: DeliveryRecord[] = [
   },
 ];
 
-export const sampleMaintenance: MaintenanceRecord[] = [
-  {
-    id: '1',
-    date: '2024-03-02',
-    description: 'Oil Change and Filter Replacement',
-    cost: 3500,
-  },
-  {
-    id: '2',
-    date: '2024-03-10',
-    description: 'Brake Pad Replacement',
-    cost: 4800,
-  },
-  {
-    id: '3',
-    date: '2024-03-15',
-    description: 'Tire Rotation and Alignment',
-    cost: 2500,
-  },
-  {
-    id: '4',
-    date: '2024-03-20',
-    description: 'Battery Replacement',
-    cost: 8000,
-  },
-  {
-    id: '5',
-    date: '2024-03-25',
-    description: 'General Service and Inspection',
-    cost: 5500,
-  },
-];
+export const sampleMaintenance: MaintenanceRecord[] = [];
 
 export const sampleFuel: FuelRecord[] = [
   {
