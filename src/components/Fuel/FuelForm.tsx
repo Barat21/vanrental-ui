@@ -1,26 +1,45 @@
 import React, { useState } from 'react';
-import { Fuel, Calendar, FileText, DollarSign } from 'lucide-react';
+import { Fuel, Calendar, FileText, DollarSign, User } from 'lucide-react';
 import { FormInput } from '../DeliveryForm/FormInput';
 import { FuelRecord } from './types';
+import { createFuel, updateFuel } from '../../services/fuelService';
+import { LoadingSpinner } from '../LoadingSpinner';
 
 interface FuelFormProps {
-  onSubmit: (data: FuelRecord) => void;
+  onSubmit: () => void;
+  initialData?: FuelRecord;
+  isEdit?: boolean;
 }
 
-export function FuelForm({ onSubmit }: FuelFormProps) {
-  const [formData, setFormData] = useState<Omit<FuelRecord, 'id'>>({
-    date: '',
-    description: '',
-    cost: 0,
-  });
+export function FuelForm({ onSubmit, initialData, isEdit = false }: FuelFormProps) {
+  const [formData, setFormData] = useState<Omit<FuelRecord, 'id'>>(
+    initialData || {
+      date: '',
+      description: '',
+      cost: 0,
+      driverName: '',
+    }
+  );
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit({
-      ...formData,
-      id: Date.now().toString(),
-    });
-    setFormData({ date: '', description: '', cost: 0 });
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      if (isEdit && initialData) {
+        await updateFuel(initialData.id, formData);
+      } else {
+        await createFuel(formData);
+      }
+      onSubmit();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -34,6 +53,12 @@ export function FuelForm({ onSubmit }: FuelFormProps) {
   return (
     <div className="bg-white rounded-xl shadow-lg p-8">
       <form onSubmit={handleSubmit} className="space-y-6">
+        {error && (
+          <div className="bg-red-50 text-red-800 p-4 rounded-lg">
+            {error}
+          </div>
+        )}
+
         <FormInput
           icon={<Calendar className="h-5 w-5" />}
           label="Date"
@@ -41,6 +66,16 @@ export function FuelForm({ onSubmit }: FuelFormProps) {
           type="date"
           value={formData.date}
           onChange={handleChange}
+          disabled={isLoading}
+        />
+
+        <FormInput
+          icon={<User className="h-5 w-5" />}
+          label="Driver Name"
+          name="driverName"
+          value={formData.driverName}
+          onChange={handleChange}
+          disabled={isLoading}
         />
 
         <FormInput
@@ -49,6 +84,7 @@ export function FuelForm({ onSubmit }: FuelFormProps) {
           name="description"
           value={formData.description}
           onChange={handleChange}
+          disabled={isLoading}
         />
 
         <FormInput
@@ -58,13 +94,15 @@ export function FuelForm({ onSubmit }: FuelFormProps) {
           type="number"
           value={formData.cost}
           onChange={handleChange}
+          disabled={isLoading}
         />
 
         <button
           type="submit"
-          className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors"
+          disabled={isLoading}
+          className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center justify-center"
         >
-          Add Fuel Record
+          {isLoading ? <LoadingSpinner /> : (isEdit ? 'Update Fuel Record' : 'Add Fuel Record')}
         </button>
       </form>
     </div>

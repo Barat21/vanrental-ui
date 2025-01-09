@@ -1,30 +1,68 @@
-import React, { useState } from 'react';
-import { ArrowUpDown, ArrowUp, ArrowDown, Download, Search } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { ArrowUpDown, ArrowUp, ArrowDown, Download, Edit, Trash2 } from 'lucide-react';
 import { AdvanceRecord } from './types';
 import { formatDate, formatCurrency } from '../../utils/formatters';
 import { DateRangeFilter } from '../DataDisplay/DateRangeFilter';
 import { exportToExcel } from '../../utils/exportToExcel';
+import { fetchAdvance, deleteAdvance } from '../../services/advanceService';
+import { LoadingSpinner } from '../LoadingSpinner';
 
 interface AdvanceTableProps {
-  data: AdvanceRecord[];
-  sortConfig: { field: keyof AdvanceRecord; order: 'asc' | 'desc' };
-  onSort: (field: keyof AdvanceRecord) => void;
-  startDate: string;
-  endDate: string;
-  onStartDateChange: (date: string) => void;
-  onEndDateChange: (date: string) => void;
+  onEdit: (record: AdvanceRecord) => void;
+  onRefresh: () => void;
 }
 
-export function AdvanceTable({
-  data,
-  sortConfig,
-  onSort,
-  startDate,
-  endDate,
-  onStartDateChange,
-  onEndDateChange,
-}: AdvanceTableProps) {
-  const [driverSearch, setDriverSearch] = useState('');
+export function AdvanceTable({ onEdit, onRefresh }: AdvanceTableProps) {
+  const [data, setData] = useState<AdvanceRecord[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [sortConfig, setSortConfig] = useState<{ field: keyof AdvanceRecord; order: 'asc' | 'desc' }>({
+    field: 'date',
+    order: 'desc',
+  });
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+
+  useEffect(() => {
+    loadAdvanceRecords();
+  }, []);
+
+  const loadAdvanceRecords = async () => {
+    try {
+      setIsLoading(true);
+      const records = await fetchAdvance();
+      setData(records);
+      setError(null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load advance records');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!window.confirm('Are you sure you want to delete this record?')) {
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      await deleteAdvance(id);
+      await loadAdvanceRecords();
+      onRefresh();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to delete record');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSort = (field: keyof AdvanceRecord) => {
+    setSortConfig(prev => ({
+      field,
+      order: prev.field === field && prev.order === 'asc' ? 'desc' : 'asc',
+    }));
+  };
 
   const getSortIcon = (field: keyof AdvanceRecord) => {
     if (sortConfig.field !== field) return <ArrowUpDown className="h-4 w-4" />;
@@ -33,7 +71,7 @@ export function AdvanceTable({
       <ArrowDown className="h-4 w-4" />;
   };
 
-  const filteredByDate = data.filter(record => {
+  const filteredData = data.filter(record => {
     if (!startDate && !endDate) return true;
     const recordDate = new Date(record.date);
     const start = startDate ? new Date(startDate) : new Date(0);
@@ -41,14 +79,16 @@ export function AdvanceTable({
     return recordDate >= start && recordDate <= end;
   });
 
-  const filteredData = filteredByDate.filter(record =>
-    record.driverName.toLowerCase().includes(driverSearch.toLowerCase())
-  );
+  const sortedData = [...filteredData].sort((a, b) => {
+    const field = sortConfig.field;
+    const order = sortConfig.order === 'asc' ? 1 : -1;
+    return a[field] > b[field] ? order : -order;
+  });
 
-  const totalAmount = filteredData.reduce((sum, record) => sum + record.amount, 0);
+  const totalAmount = sortedData.reduce((sum, record) => sum + record.amount, 0);
 
   const handleExport = () => {
-    const dataToExport = filteredData.map(record => ({
+    const dataToExport = sortedData.map(record => ({
       Date: record.date,
       'Driver Name': record.driverName,
       Amount: record.amount,
@@ -57,14 +97,30 @@ export function AdvanceTable({
     exportToExcel(dataToExport, `advance-payments-${new Date().toISOString().split('T')[0]}`);
   };
 
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <LoadingSpinner />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="bg-red-50 text-red-800 p-4 rounded-lg">
+        {error}
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center gap-4 flex-wrap">
         <DateRangeFilter
           startDate={startDate}
           endDate={endDate}
-          onStartDateChange={onStartDateChange}
-          onEndDateChange={onEndDateChange}
+          onStartDateChange={setStartDate}
+          onEndDateChange={setEndDate}
         />
         
         <button
@@ -76,24 +132,13 @@ export function AdvanceTable({
         </button>
       </div>
 
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
-        <input
-          type="text"
-          placeholder="Search by driver name..."
-          value={driverSearch}
-          onChange={(e) => setDriverSearch(e.target.value)}
-          className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg w-full focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-        />
-      </div>
-
       <div className="overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
               <th 
                 className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                onClick={() => onSort('date')}
+                onClick={() => handleSort('date')}
               >
                 <div className="flex items-center gap-1">
                   Date {getSortIcon('date')}
@@ -105,10 +150,13 @@ export function AdvanceTable({
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Amount
               </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Actions
+              </th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {filteredData.map((record) => (
+            {sortedData.map((record) => (
               <tr key={record.id} className="hover:bg-gray-50">
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                   {formatDate(record.date)}
@@ -119,15 +167,31 @@ export function AdvanceTable({
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                   {formatCurrency(record.amount)}
                 </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => onEdit(record)}
+                      className="text-blue-600 hover:text-blue-800 transition-colors"
+                    >
+                      <Edit className="h-5 w-5" />
+                    </button>
+                    <button
+                      onClick={() => handleDelete(record.id)}
+                      className="text-red-600 hover:text-red-800 transition-colors"
+                    >
+                      <Trash2 className="h-5 w-5" />
+                    </button>
+                  </div>
+                </td>
               </tr>
             ))}
           </tbody>
           <tfoot className="bg-gray-50">
             <tr>
               <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900" colSpan={2}>
-                Total Advance Payments
+                Total Amount
               </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600" colSpan={2}>
                 {formatCurrency(totalAmount)}
               </td>
             </tr>

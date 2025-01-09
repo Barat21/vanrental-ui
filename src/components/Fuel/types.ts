@@ -3,4 +3,10 @@ export interface FuelRecord {
   date: string;
   description: string;
   cost: number;
+  driverName?: string;
+}
+
+export interface SortConfig {
+  field: keyof FuelRecord;
+  order: 'asc' | 'desc';
 }
