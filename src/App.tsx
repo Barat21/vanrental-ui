@@ -74,6 +74,36 @@ export default function App() {
     setIsLoggedIn(false);
   };
 
+  const handleEditRecord = (type: 'maintenance' | 'fuel' | 'advance', record: MaintenanceRecord | FuelRecord | AdvanceRecord) => {
+    setIsAddingNew(true);
+    switch (type) {
+      case 'maintenance':
+        setSelectedMaintenance(record as MaintenanceRecord);
+        break;
+      case 'fuel':
+        setSelectedFuel(record as FuelRecord);
+        break;
+      case 'advance':
+        setSelectedAdvance(record as AdvanceRecord);
+        break;
+    }
+  };
+
+  const handleFormSubmit = (type: 'maintenance' | 'fuel' | 'advance') => {
+    setIsAddingNew(false);
+    switch (type) {
+      case 'maintenance':
+        setSelectedMaintenance(undefined);
+        break;
+      case 'fuel':
+        setSelectedFuel(undefined);
+        break;
+      case 'advance':
+        setSelectedAdvance(undefined);
+        break;
+    }
+  };
+
   if (!isLoggedIn) {
     return <LoginPage onLogin={() => setIsLoggedIn(true)} />;
   }
@@ -214,20 +244,16 @@ export default function App() {
           )
         )}
 
-        {/* Rest of the components remain the same */}
         {activeTab === 'maintenance' && (
           isAddingNew ? (
             <MaintenanceForm
-              onSubmit={() => {
-                setIsAddingNew(false);
-                setSelectedMaintenance(undefined);
-              }}
+              onSubmit={() => handleFormSubmit('maintenance')}
               initialData={selectedMaintenance}
               isEdit={!!selectedMaintenance}
             />
           ) : (
             <MaintenanceTable
-              onEdit={setSelectedMaintenance}
+              onEdit={(record) => handleEditRecord('maintenance', record)}
               onRefresh={() => setSelectedMaintenance(undefined)}
             />
           )
@@ -236,16 +262,13 @@ export default function App() {
         {activeTab === 'fuel' && (
           isAddingNew ? (
             <FuelForm
-              onSubmit={() => {
-                setIsAddingNew(false);
-                setSelectedFuel(undefined);
-              }}
+              onSubmit={() => handleFormSubmit('fuel')}
               initialData={selectedFuel}
               isEdit={!!selectedFuel}
             />
           ) : (
             <FuelTable
-              onEdit={setSelectedFuel}
+              onEdit={(record) => handleEditRecord('fuel', record)}
               onRefresh={() => setSelectedFuel(undefined)}
             />
           )
@@ -254,16 +277,13 @@ export default function App() {
         {activeTab === 'advance' && (
           isAddingNew ? (
             <AdvanceForm
-              onSubmit={() => {
-                setIsAddingNew(false);
-                setSelectedAdvance(undefined);
-              }}
+              onSubmit={() => handleFormSubmit('advance')}
               initialData={selectedAdvance}
               isEdit={!!selectedAdvance}
             />
           ) : (
             <AdvanceTable
-              onEdit={setSelectedAdvance}
+              onEdit={(record) => handleEditRecord('advance', record)}
               onRefresh={() => setSelectedAdvance(undefined)}
             />
           )

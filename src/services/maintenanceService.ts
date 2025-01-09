@@ -1,8 +1,10 @@
 import { MaintenanceRecord, MaintenanceFormData } from '../components/Maintenance/types';
 
+const API_URL = 'https://van-rental.onrender.com/api';
+
 export async function createMaintenance(data: MaintenanceFormData): Promise<MaintenanceRecord> {
   try {
-    const response = await fetch('https://van-rental.onrender.com/api/maintenance', {
+    const response = await fetch(`${API_URL}/maintenance`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -17,7 +19,8 @@ export async function createMaintenance(data: MaintenanceFormData): Promise<Main
     });
 
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      const errorData = await response.text();
+      throw new Error(errorData || 'Failed to create maintenance record');
     }
 
     const result = await response.json();
@@ -31,13 +34,13 @@ export async function createMaintenance(data: MaintenanceFormData): Promise<Main
     };
   } catch (error) {
     console.error('Create maintenance error:', error);
-    throw new Error('Failed to create maintenance record');
+    throw error instanceof Error ? error : new Error('Failed to create maintenance record');
   }
 }
 
 export async function updateMaintenance(id: string, data: MaintenanceFormData): Promise<MaintenanceRecord> {
   try {
-    const response = await fetch(`https://van-rental.onrender.com/api/maintenance/${id}`, {
+    const response = await fetch(`${API_URL}/maintenance/${id}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -52,7 +55,8 @@ export async function updateMaintenance(id: string, data: MaintenanceFormData): 
     });
 
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      const errorData = await response.text();
+      throw new Error(errorData || 'Failed to update maintenance record');
     }
 
     const result = await response.json();
@@ -66,31 +70,33 @@ export async function updateMaintenance(id: string, data: MaintenanceFormData): 
     };
   } catch (error) {
     console.error('Update maintenance error:', error);
-    throw new Error('Failed to update maintenance record');
+    throw error instanceof Error ? error : new Error('Failed to update maintenance record');
   }
 }
 
 export async function deleteMaintenance(id: string): Promise<void> {
   try {
-    const response = await fetch(`https://van-rental.onrender.com/api/maintenance/${id}`, {
+    const response = await fetch(`${API_URL}/maintenance/${id}`, {
       method: 'DELETE',
     });
 
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      const errorData = await response.text();
+      throw new Error(errorData || 'Failed to delete maintenance record');
     }
   } catch (error) {
     console.error('Delete maintenance error:', error);
-    throw new Error('Failed to delete maintenance record');
+    throw error instanceof Error ? error : new Error('Failed to delete maintenance record');
   }
 }
 
 export async function fetchMaintenance(): Promise<MaintenanceRecord[]> {
   try {
-    const response = await fetch('https://van-rental.onrender.com/api/maintenance');
+    const response = await fetch(`${API_URL}/maintenance`);
 
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      const errorData = await response.text();
+      throw new Error(errorData || 'Failed to fetch maintenance records');
     }
 
     const data = await response.json();
@@ -104,6 +110,6 @@ export async function fetchMaintenance(): Promise<MaintenanceRecord[]> {
     }));
   } catch (error) {
     console.error('Fetch maintenance error:', error);
-    throw new Error('Failed to fetch maintenance records');
+    throw error instanceof Error ? error : new Error('Failed to fetch maintenance records');
   }
 }
