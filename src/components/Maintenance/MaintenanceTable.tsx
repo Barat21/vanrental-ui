@@ -6,6 +6,7 @@ import { DateRangeFilter } from '../DataDisplay/DateRangeFilter';
 import { exportToExcel } from '../../utils/exportToExcel';
 import { fetchMaintenance, deleteMaintenance } from '../../services/maintenanceService';
 import { LoadingSpinner } from '../LoadingSpinner';
+import { DeleteConfirmation } from '../common/DeleteConfirmation';
 
 interface MaintenanceTableProps {
   onEdit: (record: MaintenanceRecord) => void;
@@ -19,6 +20,10 @@ export function MaintenanceTable({ onEdit, onRefresh }: MaintenanceTableProps) {
   const [sortConfig, setSortConfig] = useState<SortConfig>({ field: 'date', order: 'desc' });
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
+  const [deleteConfirmation, setDeleteConfirmation] = useState<{
+    isOpen: boolean;
+    id: string | null;
+  }>({ isOpen: false, id: null });
 
   useEffect(() => {
     loadMaintenance();
@@ -37,20 +42,22 @@ export function MaintenanceTable({ onEdit, onRefresh }: MaintenanceTableProps) {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!window.confirm('Are you sure you want to delete this record?')) {
-      return;
-    }
+  const handleDelete = (id: string) => {
+    setDeleteConfirmation({ isOpen: true, id });
+  };
 
-    try {
-      setIsLoading(true);
-      await deleteMaintenance(id);
-      await loadMaintenance();
-      onRefresh();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to delete record');
-    } finally {
-      setIsLoading(false);
+  const confirmDelete = async () => {
+    if (deleteConfirmation.id) {
+      try {
+        setIsLoading(true);
+        await deleteMaintenance(deleteConfirmation.id);
+        await loadMaintenance();
+        onRefresh();
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to delete record');
+      } finally {
+        setIsLoading(false);
+      }
     }
   };
 
@@ -209,6 +216,12 @@ export function MaintenanceTable({ onEdit, onRefresh }: MaintenanceTableProps) {
           </tfoot>
         </table>
       </div>
+
+      <DeleteConfirmation
+        isOpen={deleteConfirmation.isOpen}
+        onClose={() => setDeleteConfirmation({ isOpen: false, id: null })}
+        onConfirm={confirmDelete}
+      />
     </div>
   );
 }

@@ -16,6 +16,7 @@ import { MaintenanceRecord } from './components/Maintenance/types';
 import { FuelRecord } from './components/Fuel/types';
 import { AdvanceRecord } from './components/Advance/types';
 import { fetchTrips, deleteTrip } from './services/tripService';
+import { DeleteConfirmation } from './components/common/DeleteConfirmation';
 
 export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -29,6 +30,10 @@ export default function App() {
   const [selectedAdvance, setSelectedAdvance] = useState<AdvanceRecord | undefined>();
   const [deliveryData, setDeliveryData] = useState<DeliveryRecord[]>([]);
   const [selectedDelivery, setSelectedDelivery] = useState<DeliveryRecord | undefined>();
+  const [deleteConfirmation, setDeleteConfirmation] = useState<{
+    isOpen: boolean;
+    id: string | null;
+  }>({ isOpen: false, id: null });
 
   useEffect(() => {
     if (activeTab === 'delivery' && !isAddingNew) {
@@ -60,9 +65,13 @@ export default function App() {
   };
 
   const handleDeleteDelivery = async (id: string) => {
-    if (window.confirm('Are you sure you want to delete this record?')) {
+    setDeleteConfirmation({ isOpen: true, id });
+  };
+
+  const confirmDelete = async () => {
+    if (deleteConfirmation.id) {
       try {
-        await deleteTrip(Number(id));
+        await deleteTrip(Number(deleteConfirmation.id));
         await loadDeliveryData();
       } catch (error) {
         console.error('Error deleting delivery:', error);
@@ -312,6 +321,12 @@ export default function App() {
             onEndDateChange={setEndDate}
           />
         )}
+
+        <DeleteConfirmation
+          isOpen={deleteConfirmation.isOpen}
+          onClose={() => setDeleteConfirmation({ isOpen: false, id: null })}
+          onConfirm={confirmDelete}
+        />
       </div>
     </Layout>
   );

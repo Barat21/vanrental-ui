@@ -6,6 +6,7 @@ import { DateRangeFilter } from '../DataDisplay/DateRangeFilter';
 import { exportToExcel } from '../../utils/exportToExcel';
 import { fetchAdvance, deleteAdvance } from '../../services/advanceService';
 import { LoadingSpinner } from '../LoadingSpinner';
+import { DeleteConfirmation } from '../common/DeleteConfirmation';
 
 interface AdvanceTableProps {
   onEdit: (record: AdvanceRecord) => void;
@@ -22,6 +23,10 @@ export function AdvanceTable({ onEdit, onRefresh }: AdvanceTableProps) {
   });
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
+  const [deleteConfirmation, setDeleteConfirmation] = useState<{
+    isOpen: boolean;
+    id: string | null;
+  }>({ isOpen: false, id: null });
 
   useEffect(() => {
     loadAdvanceRecords();
@@ -40,20 +45,22 @@ export function AdvanceTable({ onEdit, onRefresh }: AdvanceTableProps) {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!window.confirm('Are you sure you want to delete this record?')) {
-      return;
-    }
+  const handleDelete = (id: string) => {
+    setDeleteConfirmation({ isOpen: true, id });
+  };
 
-    try {
-      setIsLoading(true);
-      await deleteAdvance(id);
-      await loadAdvanceRecords();
-      onRefresh();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to delete record');
-    } finally {
-      setIsLoading(false);
+  const confirmDelete = async () => {
+    if (deleteConfirmation.id) {
+      try {
+        setIsLoading(true);
+        await deleteAdvance(deleteConfirmation.id);
+        await loadAdvanceRecords();
+        onRefresh();
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to delete record');
+      } finally {
+        setIsLoading(false);
+      }
     }
   };
 
@@ -198,6 +205,12 @@ export function AdvanceTable({ onEdit, onRefresh }: AdvanceTableProps) {
           </tfoot>
         </table>
       </div>
+
+      <DeleteConfirmation
+        isOpen={deleteConfirmation.isOpen}
+        onClose={() => setDeleteConfirmation({ isOpen: false, id: null })}
+        onConfirm={confirmDelete}
+      />
     </div>
   );
 }

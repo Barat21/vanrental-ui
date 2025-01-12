@@ -102,11 +102,7 @@ export function DriverSalaryTable({
                       <Edit className="h-5 w-5" />
                     </button>
                     <button
-                      onClick={() => {
-                        if (window.confirm('Are you sure you want to delete this record?')) {
-                          onDelete(record.id);
-                        }
-                      }}
+                      onClick={() => onDelete(record.id)}
                       className="text-red-600 hover:text-red-800 transition-colors"
                     >
                       <Trash2 className="h-5 w-5" />

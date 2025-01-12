@@ -6,6 +6,7 @@ import { DateRangeFilter } from '../DataDisplay/DateRangeFilter';
 import { exportToExcel } from '../../utils/exportToExcel';
 import { fetchFuel, deleteFuel } from '../../services/fuelService';
 import { LoadingSpinner } from '../LoadingSpinner';
+import { DeleteConfirmation } from '../common/DeleteConfirmation';
 
 interface FuelTableProps {
   onEdit: (record: FuelRecord) => void;
@@ -22,6 +23,10 @@ export function FuelTable({ onEdit, onRefresh }: FuelTableProps) {
   });
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
+  const [deleteConfirmation, setDeleteConfirmation] = useState<{
+    isOpen: boolean;
+    id: string | null;
+  }>({ isOpen: false, id: null });
 
   useEffect(() => {
     loadFuelRecords();
@@ -40,20 +45,22 @@ export function FuelTable({ onEdit, onRefresh }: FuelTableProps) {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!window.confirm('Are you sure you want to delete this record?')) {
-      return;
-    }
+  const handleDelete = (id: string) => {
+    setDeleteConfirmation({ isOpen: true, id });
+  };
 
-    try {
-      setIsLoading(true);
-      await deleteFuel(id);
-      await loadFuelRecords();
-      onRefresh();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to delete record');
-    } finally {
-      setIsLoading(false);
+  const confirmDelete = async () => {
+    if (deleteConfirmation.id) {
+      try {
+        setIsLoading(true);
+        await deleteFuel(deleteConfirmation.id);
+        await loadFuelRecords();
+        onRefresh();
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to delete record');
+      } finally {
+        setIsLoading(false);
+      }
     }
   };
 
@@ -205,6 +212,12 @@ export function FuelTable({ onEdit, onRefresh }: FuelTableProps) {
           </tfoot>
         </table>
       </div>
+
+      <DeleteConfirmation
+        isOpen={deleteConfirmation.isOpen}
+        onClose={() => setDeleteConfirmation({ isOpen: false, id: null })}
+        onConfirm={confirmDelete}
+      />
     </div>
   );
 }
