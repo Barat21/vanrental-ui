@@ -100,6 +100,7 @@ export function FuelTable({ onEdit, onRefresh }: FuelTableProps) {
       'Driver Name': record.driverName,
       Description: record.description,
       Cost: record.cost,
+      'Payment Status': record.paidByDriver ? 'Paid by Driver' : 'Not Paid by Driver'
     }));
 
     exportToExcel(dataToExport, `fuel-records-${new Date().toISOString().split('T')[0]}`);
@@ -162,6 +163,9 @@ export function FuelTable({ onEdit, onRefresh }: FuelTableProps) {
                 Cost
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Payment Status
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Actions
               </th>
             </tr>
@@ -180,6 +184,15 @@ export function FuelTable({ onEdit, onRefresh }: FuelTableProps) {
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                   {formatCurrency(record.cost)}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm">
+                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                    record.paidByDriver 
+                      ? 'bg-green-100 text-green-800'
+                      : 'bg-yellow-100 text-yellow-800'
+                  }`}>
+                    {record.paidByDriver ? 'Paid by Driver' : 'Not Paid by Driver'}
+                  </span>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                   <div className="flex items-center gap-2">
@@ -205,7 +218,7 @@ export function FuelTable({ onEdit, onRefresh }: FuelTableProps) {
               <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900" colSpan={3}>
                 Total Cost
               </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600" colSpan={2}>
+              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600" colSpan={3}>
                 {formatCurrency(totalCost)}
               </td>
             </tr>

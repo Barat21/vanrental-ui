@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowUpDown, ArrowUp, ArrowDown, Download, Edit, Trash2 } from 'lucide-react';
-import { MaintenanceRecord, SortConfig } from './types';
+import { MaintenanceRecord } from './types';
 import { formatDate, formatCurrency } from '../../utils/formatters';
 import { DateRangeFilter } from '../DataDisplay/DateRangeFilter';
 import { exportToExcel } from '../../utils/exportToExcel';
@@ -17,7 +17,10 @@ export function MaintenanceTable({ onEdit, onRefresh }: MaintenanceTableProps) {
   const [data, setData] = useState<MaintenanceRecord[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [sortConfig, setSortConfig] = useState<SortConfig>({ field: 'date', order: 'desc' });
+  const [sortConfig, setSortConfig] = useState<{ field: keyof MaintenanceRecord; order: 'asc' | 'desc' }>({
+    field: 'date',
+    order: 'desc',
+  });
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [deleteConfirmation, setDeleteConfirmation] = useState<{
@@ -98,6 +101,7 @@ export function MaintenanceTable({ onEdit, onRefresh }: MaintenanceTableProps) {
       'Driver Name': record.driverName,
       Description: record.description,
       Cost: record.cost,
+      'Payment Status': record.paidByDriver ? 'Paid by Driver' : 'Not Paid by Driver'
     }));
 
     exportToExcel(dataToExport, `maintenance-records-${new Date().toISOString().split('T')[0]}`);
@@ -163,6 +167,9 @@ export function MaintenanceTable({ onEdit, onRefresh }: MaintenanceTableProps) {
                 Cost
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Payment Status
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Actions
               </th>
             </tr>
@@ -184,6 +191,15 @@ export function MaintenanceTable({ onEdit, onRefresh }: MaintenanceTableProps) {
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                   {formatCurrency(record.cost)}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm">
+                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                    record.paidByDriver 
+                      ? 'bg-green-100 text-green-800'
+                      : 'bg-yellow-100 text-yellow-800'
+                  }`}>
+                    {record.paidByDriver ? 'Paid by Driver' : 'Not Paid by Driver'}
+                  </span>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                   <div className="flex items-center gap-2">
@@ -209,7 +225,7 @@ export function MaintenanceTable({ onEdit, onRefresh }: MaintenanceTableProps) {
               <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900" colSpan={4}>
                 Total Cost
               </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600" colSpan={2}>
+              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600" colSpan={3}>
                 {formatCurrency(totalCost)}
               </td>
             </tr>

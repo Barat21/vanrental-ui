@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Fuel, Calendar, FileText, DollarSign, User } from 'lucide-react';
+import { Fuel, Calendar, FileText, DollarSign, User, CreditCard } from 'lucide-react';
 import { FormInput } from '../DeliveryForm/FormInput';
 import { FuelRecord } from './types';
 import { createFuel, updateFuel } from '../../services/fuelService';
@@ -18,6 +18,7 @@ export function FuelForm({ onSubmit, initialData, isEdit = false }: FuelFormProp
       description: '',
       cost: 0,
       driverName: '',
+      paidByDriver: false,
     }
   );
   const [isLoading, setIsLoading] = useState(false);
@@ -43,10 +44,10 @@ export function FuelForm({ onSubmit, initialData, isEdit = false }: FuelFormProp
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value, type } = e.target;
+    const { name, value, type, checked } = e.target;
     setFormData(prev => ({
       ...prev,
-      [name]: type === 'number' ? parseFloat(value) || 0 : value,
+      [name]: type === 'checkbox' ? checked : type === 'number' ? parseFloat(value) || 0 : value,
     }));
   };
 
@@ -96,6 +97,21 @@ export function FuelForm({ onSubmit, initialData, isEdit = false }: FuelFormProp
           onChange={handleChange}
           disabled={isLoading}
         />
+
+        <div className="flex items-center gap-2">
+          <input
+            type="checkbox"
+            id="paidByDriver"
+            name="paidByDriver"
+            checked={formData.paidByDriver}
+            onChange={handleChange}
+            className="h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+          />
+          <label htmlFor="paidByDriver" className="flex items-center gap-2 text-sm font-medium text-gray-700">
+            <CreditCard className="h-5 w-5 text-gray-400" />
+            Paid by Driver
+          </label>
+        </div>
 
         <button
           type="submit"

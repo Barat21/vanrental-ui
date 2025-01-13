@@ -4,6 +4,7 @@ export interface FuelRecord {
   description: string;
   cost: number;
   driverName?: string;
+  paidByDriver: boolean;
 }
 
 export interface SortConfig {

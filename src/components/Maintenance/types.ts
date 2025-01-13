@@ -4,6 +4,7 @@ export interface MaintenanceFormData {
   cost: number;
   vanNo: string;
   driverName: string;
+  paidByDriver: boolean;
 }
 
 export interface MaintenanceRecord extends MaintenanceFormData {
