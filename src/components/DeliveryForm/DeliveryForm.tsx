@@ -48,7 +48,11 @@ export function DeliveryForm({ onSubmit, initialData, isEdit = false }: Delivery
   }, [initialData]);
 
   const calculateBags = useCallback((wayment: number) => {
-    return Math.ceil(wayment / 78);
+    const bagsExact = wayment / 78;
+    const decimal = bagsExact % 1;
+    
+    // If decimal part is >= 0.5, round up, otherwise round down
+    return decimal >= 0.5 ? Math.ceil(bagsExact) : Math.floor(bagsExact);
   }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
